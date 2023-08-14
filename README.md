@@ -15,5 +15,5 @@ Run these commands:
 
 or Run by docker compose
 
-test change to observer ci/cd pipeline.
+test change to observer ci/cd pipeline. Re-test.
 
