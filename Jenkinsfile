@@ -1,30 +1,32 @@
 pipeline {
-    agent {label 'dev-agent'}
-    
-    stages{
-        stage('Code'){
+    agent any
+    stages {
+        stage ("Code") {
             steps {
-                git url: 'https://github.com/ashrhmn25/node-todo-cicd.git', branch: 'master'
+                echo "Code clone ho gya hai"
+                git url: "https://github.com/ashrhmn25/node-todo-cicd.git", branch: "master"
             }
         }
-        stage('Build and Test'){
+        stage ("Build & Test") {
             steps {
-                sh "docker build . -t ashraf1980/node-todo-app-cicd:latest"
-            }    
+                echo "docker build bhi ho gya hai"
+                sh "docker build . -t node-app-demo"
+            }
         }
-        stage('Login and Push Image'){
-            steps{
-                echo "Login to docker hub and push image.."
-                withCredentials([usernamePassword(credentialsId:'dockerHub',passwordVariable:'dockerHubPass',usernameVariable:'dockerHubUser')]) {
+        stage ("Push to Repository") {
+            steps {
+                echo "dockerHub pe push ho gya hai"
+                withCredentials([usernamePassword(credentialsId:"dockerHub",passwordVariable:"dockerHubPass",usernameVariable:"dockerHubUser")]){
                     sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPass}"
-                    sh 'docker push ashraf1980/node-todo-app-cicd:latest'
+                    sh "docker tag node-app-demo ${env.dockerHubUser}/node-app-demo:latest"
+                    sh "docker push ${env.dockerHubUser}/node-app-demo:latest"
                 }
             }
         }
-        stage('Deploy'){
+        stage ("Deploy") {
             steps {
-                sh 'docker-compose down'
-                sh 'docker-compose up -d --no-deps --build web'
+                echo "Amazon EC2 pe docker compose ne deploy kar diya hai"
+                sh "docker-compose down && docker-compose up -d"
             }
         }
     }
